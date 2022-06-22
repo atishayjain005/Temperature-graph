@@ -88,7 +88,15 @@ export default function Home() {
         </div>
       </div>
     );
-  if (!data) return <p>No data</p>;
+  if (!data)
+    return (
+      <div
+        className="d-flex justify-content-center align-items-center position-fixed bottom-50 start-50"
+        style={{ transform: "translate(-50%,50%)" }}
+      >
+        <h3>No Data</h3>
+      </div>
+    );
 
   data.data.map((dummyData) => {
     const date = new Date(dummyData.date);
