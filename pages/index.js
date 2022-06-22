@@ -73,8 +73,22 @@ export default function Home() {
       });
   }, []);
 
-  if (isLoading) return <p>Loading...</p>;
-  if (!data) return <p>No profile data</p>;
+  if (isLoading)
+    return (
+      <div
+        className="d-flex justify-content-center align-items-center position-fixed bottom-50 start-50"
+        style={{ transform: "translate(-50%,50%)" }}
+      >
+        <div
+          className="spinner-border"
+          style={{ width: "10rem", height: "10rem" }}
+          role="status"
+        >
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  if (!data) return <p>No data</p>;
 
   data.data.map((dummyData) => {
     const date = new Date(dummyData.date);
