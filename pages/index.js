@@ -26,31 +26,20 @@ ChartJS.register(
 );
 
 const options = {
-  plugins: {
-    legend: {
-      display: false,
-    },
-  },
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: false,
+  interaction: { mode: 'index', intersect: false },
+  plugins: { legend: { display: false }, tooltip: { callbacks: {
+    label: context => `${context.parsed.y} °C`,
+  } } },
   elements: {
-    line: {
-      tension: 0,
-      borderWidth: 3,
-      borderColor: "blue",
-      fill: "start",
-      backgroundColor: "white",
-    },
-    point: {
-      radius: 0,
-      hitRadius: 0,
-    },
+    line: { tension: 0, borderWidth: 3, borderColor: '#2454a6', fill: false },
+    point: { radius: 3, hitRadius: 12 },
   },
   scales: {
-    xAxis: {
-      display: true,
-    },
-    yAxis: {
-      display: true,
-    },
+    x: { title: { display: true, text: 'Date (UTC)' }, ticks: { maxTicksLimit: 5 } },
+    y: { title: { display: true, text: 'Temperature (°C)' } },
   },
 };
 
@@ -100,7 +89,7 @@ export default function Home() {
     );
   }
 
-  data.data.map((dummyData) => {
+  data.data.forEach((dummyData) => {
     const date = new Date(dummyData.date);
 
     labels.push(
@@ -130,21 +119,14 @@ export default function Home() {
         </div>
       </header>
       <main className="container">
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-evenly",
-            alignItems: "center",
-            flexBasis: "100%",
-            height: "calc(100vh - 56px)",
-          }}
-        >
+        <div className="chart-content">
           <h1 className="fw-bold">
             Sample temperatures over 10 days
           </h1>
           <p>Generated sample data, not observed weather. Temperatures in °C; dates in UTC.</p>
-          <Line role="img" aria-label="Generated sample temperatures in degrees Celsius" aria-describedby="data-description" data={dummyData} width={200} height={90} options={options} />
+          <div className="chart-frame">
+          <Line role="img" aria-label="Generated sample temperatures in degrees Celsius" aria-describedby="data-description" data={dummyData} options={options} />
+          </div>
           <section aria-labelledby="data-heading" className="w-100 pb-4">
             <h2 id="data-heading">Temperature samples</h2>
             <p id="data-description">The table lists every value shown in the chart, from oldest to newest.</p>

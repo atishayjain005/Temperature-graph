@@ -14,3 +14,28 @@ a {
 * {
   box-sizing: border-box;
 }
+
+.chart-content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+.chart-content h1 { font-size: clamp(1.6rem, 4vw, 2.5rem); }
+.chart-frame {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: 360px;
+  margin: 1.5rem 0 2rem;
+}
+.table { width: 100%; table-layout: fixed; }
+.table caption { color: #495057; }
+.table th, .table td { overflow-wrap: anywhere; }
+button:focus-visible { outline: 3px solid #172f58; outline-offset: 3px; }
+@media (max-width: 480px) {
+  .chart-frame { height: 300px; }
+  .chart-content { padding-top: 1.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+}

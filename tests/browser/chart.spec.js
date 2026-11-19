@@ -58,3 +58,19 @@ test('retry is keyboard operable', async ({ page }) => {
   await page.keyboard.press('Enter');
   await expect(page.getByRole('table')).toBeVisible();
 });
+test('chart and table fit narrow, tablet and desktop screens with reduced motion', async ({ page }, testInfo) => {
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/');
+  await expect(page.getByRole('table')).toBeVisible();
+  for (const width of [320,768,1280]) {
+    await page.setViewportSize({width,height:800});
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
+    const canvas = await page.locator('canvas').boundingBox();
+    expect(canvas.width).toBeLessThanOrEqual(width);
+    expect(canvas.height).toBeGreaterThanOrEqual(290);
+  }
+  if(testInfo.project.name === 'mobile') {
+    await page.setViewportSize({width:320,height:800});
+    await page.screenshot({path:'test-results/mobile-chart.png',fullPage:true});
+  }
+});
