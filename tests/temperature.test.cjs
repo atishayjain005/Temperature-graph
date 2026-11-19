@@ -16,3 +16,15 @@ test('sample discloses origin and spans ten complete UTC days across leap day', 
 test('sample temperature stays below the exclusive upper bound', () => {
   assert.ok(generateSample(new Date(), () => 0.99999).data.every(row => row.temperature === 44));
 });
+const { parseSample } = require('../lib/temperature.cjs');
+test('invalid response shapes, dates and values are rejected before charting', () => {
+  for (const data of [null, {}, {data:null}, {data:[null]}, {data:[{date:0,temperature:'20'}]}, {data:[{date:1e99,temperature:20}]}]) {
+    assert.throws(() => parseSample(data));
+  }
+  assert.deepEqual(parseSample({data:[]}).data, []);
+});
+test('out-of-order data is sorted without modifying the response', () => {
+  const data = [{date:2,temperature:10},{date:1,temperature:20}];
+  assert.equal(parseSample({data}).data[0].date, 1);
+  assert.equal(data[0].date, 2);
+});

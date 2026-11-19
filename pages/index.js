@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Head from "next/head";
+import { parseSample } from "../lib/temperature.cjs";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -55,46 +56,49 @@ const options = {
 
 export default function Home() {
   const [data, setData] = useState(null);
-  const [isLoading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [attempt, setAttempt] = useState(0);
   let labels = [];
   let content = [];
 
   useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+    let timedOut = false;
     setLoading(true);
-    fetch("/api/")
-      .then((res) => {
-        return res.json();
-      })
-      .then((data) => {
-        setData(data);
-        setLoading(false);
-      });
-  }, []);
+    setError('');
+    const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 10000);
+    async function load() {
+      try {
+        const response = await fetch('/api/', { signal: controller.signal });
+        if (!response.ok) throw new Error('Temperature data could not be loaded.');
+        const result = parseSample(await response.json());
+        if (active) setData(result);
+      } catch (error) {
+        if (active) setError(timedOut ? 'The request timed out. Please try again.' : 'Temperature data could not be loaded. Please try again.');
+      } finally {
+        clearTimeout(timer);
+        if (active) setLoading(false);
+      }
+    }
+    load();
+    return () => { active = false; clearTimeout(timer); controller.abort(); };
+  }, [attempt]);
 
-  if (isLoading)
+  if (isLoading || error || !data || data.data.length === 0) {
     return (
-      <div
-        className="d-flex justify-content-center align-items-center position-fixed bottom-50 start-50"
-        style={{ transform: "translate(-50%,50%)" }}
-      >
-        <div
-          className="spinner-border"
-          style={{ width: "10rem", height: "10rem" }}
-          role="status"
-        >
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
+      <main className="container py-5">
+        <Head><title>Temperature Graph · Sample data</title></Head>
+        <h1>Temperature Graph</h1>
+        <p>Generated sample data, not observed weather. Temperatures in °C; dates in UTC.</p>
+        {isLoading ? <p role="status">Loading sample temperatures…</p> : <>
+          {error ? <p role="alert">{error}</p> : <p role="status">No temperature samples available.</p>}
+          <button type="button" className="btn btn-primary" onClick={() => setAttempt(value => value + 1)}>Try again</button>
+        </>}
+      </main>
     );
-  if (!data)
-    return (
-      <div
-        className="d-flex justify-content-center align-items-center position-fixed bottom-50 start-50"
-        style={{ transform: "translate(-50%,50%)" }}
-      >
-        <h3>No Data</h3>
-      </div>
-    );
+  }
 
   data.data.map((dummyData) => {
     const date = new Date(dummyData.date);
