@@ -15,3 +15,8 @@ No existing PRs/issues or prior proposals found. Existing product remains a gene
 
 Implementation status: In Progress. No disruptive proposals, approval deadlines, or auto-approvals.
 Validation and release evidence will be recorded below. Sample values are generated demo data, not weather observations.
+
+## Validation and handoff
+
+Five scoped improvements implemented. Lint, four unit tests, production build, and eighteen desktop/mobile Chromium cases pass; 320px screenshot inspected. Tests also check 768/1280px layouts. No standalone TypeScript checker. No secrets or paid infrastructure used.
+Dependency audit: 18 findings (1 critical, 12 high, 5 moderate), retained as a release blocker. No production deployment claimed. Dedicated Project #17 tracks implementation and separate security/hosting backlog. No approvals requested or auto-approved.
