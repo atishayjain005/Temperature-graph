@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Head from "next/head";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -66,8 +66,6 @@ export default function Home() {
         return res.json();
       })
       .then((data) => {
-        console.log("1", data, typeof data);
-        console.log("2", JSON.stringify(data));
         setData(data);
         setLoading(false);
       });
@@ -105,6 +103,7 @@ export default function Home() {
       date.toLocaleDateString([], {
         month: "2-digit",
         day: "2-digit",
+        timeZone: "UTC",
       })
     );
     content.push(dummyData.temperature);
@@ -118,20 +117,14 @@ export default function Home() {
       },
     ],
   };
-  console.log(data.data);
   return (
     <div>
+      <Head><title>Temperature Graph · Sample data</title><meta name="description" content="A temperature chart demo using generated sample values, not observed weather." /></Head>
       <nav className="navbar navbar-dark bg-dark">
         <div className="container-fluid">
-          <Link
-            href="https://smiles.ai/in/v1/free-smile-assessment?utm_source=PPC&utm_medium=brand&utm_campaign=bangalore&utm_id=Search&gclid=CjwKCAjw-8qVBhANEiwAfjXLrhtBY1ieJUAT-Oo2FSooJnxFEAT9x9i50AInHt6kHJVXJ4H-ewvAvRoCwUoQAvD_BwE"
-            passHref
-          >
-            <a className="navbar-brand fw-bold">Smiles.ai Assignment</a>
-          </Link>
+          <span className="navbar-brand fw-bold">Temperature Graph</span>
         </div>
       </nav>
-      {console.log(dummyData)}
       <div className="container">
         <div
           style={{
@@ -144,9 +137,9 @@ export default function Home() {
           }}
         >
           <h1 className="fw-bold">
-            <span className="text-danger  ">Weather Temperature</span> of last
-            10 days
+            Sample temperatures over 10 days
           </h1>
+          <p>Generated sample data, not observed weather. Temperatures in °C; dates in UTC.</p>
           <Line data={dummyData} width={200} height={90} options={options} />
         </div>
       </div>
