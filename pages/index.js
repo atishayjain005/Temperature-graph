@@ -124,12 +124,12 @@ export default function Home() {
   return (
     <div>
       <Head><title>Temperature Graph · Sample data</title><meta name="description" content="A temperature chart demo using generated sample values, not observed weather." /></Head>
-      <nav className="navbar navbar-dark bg-dark">
+      <header className="navbar navbar-dark bg-dark">
         <div className="container-fluid">
           <span className="navbar-brand fw-bold">Temperature Graph</span>
         </div>
-      </nav>
-      <div className="container">
+      </header>
+      <main className="container">
         <div
           style={{
             display: "flex",
@@ -144,9 +144,21 @@ export default function Home() {
             Sample temperatures over 10 days
           </h1>
           <p>Generated sample data, not observed weather. Temperatures in °C; dates in UTC.</p>
-          <Line data={dummyData} width={200} height={90} options={options} />
+          <Line role="img" aria-label="Generated sample temperatures in degrees Celsius" aria-describedby="data-description" data={dummyData} width={200} height={90} options={options} />
+          <section aria-labelledby="data-heading" className="w-100 pb-4">
+            <h2 id="data-heading">Temperature samples</h2>
+            <p id="data-description">The table lists every value shown in the chart, from oldest to newest.</p>
+            <table className="table">
+              <caption>Generated daily temperatures; dates use UTC.</caption>
+              <thead><tr><th scope="col">Date (UTC)</th><th scope="col">Temperature (°C)</th></tr></thead>
+              <tbody>{data.data.map((row, index) => <tr key={`${row.date}-${index}`}>
+                <th scope="row"><time dateTime={new Date(row.date).toISOString()}>{new Date(row.date).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric',timeZone:'UTC'})}</time></th>
+                <td>{row.temperature} °C</td>
+              </tr>)}</tbody>
+            </table>
+          </section>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

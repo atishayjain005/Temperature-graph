@@ -37,3 +37,24 @@ test('slow requests time out rather than spin forever', async ({ page }) => {
   await page.clock.fastForward(11000);
   await expect(page.getByRole('main').getByRole('alert')).toContainText('timed out');
 });
+test('chart values are available in a semantic table without canvas interaction', async ({ page }) => {
+  await page.route('**/api/', route => route.fulfill({json:{data:[{date:Date.UTC(2024,1,29),temperature:-5},{date:Date.UTC(2024,2,1),temperature:0}]}}));
+  await page.goto('/');
+  await expect(page.getByRole('main')).toBeVisible();
+  await expect(page.getByRole('img', {name:/Generated sample temperatures/})).toBeVisible();
+  await expect(page.getByRole('table')).toContainText('29 Feb 2024');
+  await expect(page.getByRole('table')).toContainText('-5 °C');
+  await expect(page.getByRole('table')).toContainText('0 °C');
+  await expect(page.getByRole('columnheader')).toHaveCount(2);
+  await expect(page.getByRole('rowheader')).toHaveCount(2);
+});
+test('retry is keyboard operable', async ({ page }) => {
+  await page.route('**/api/', route => route.abort());
+  await page.goto('/');
+  await expect(page.getByRole('button', {name:'Try again'})).toBeVisible();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', {name:'Try again'})).toBeFocused();
+  await page.unroute('**/api/');
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('table')).toBeVisible();
+});
