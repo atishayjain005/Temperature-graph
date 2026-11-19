@@ -34,7 +34,7 @@ Browser tests start the built production app on port 3018; keep that port free. 
 
 ## Release status and limitations
 
-The current framework is legacy Next.js 12.1.6. The dependency audit on 20 November 2026 reported 18 advisories (1 critical, 12 high, 5 moderate). Passing functional tests is not production security clearance. Resolve the framework/dependency findings in a separately validated migration before public production release; do not run a forced audit upgrade blindly.
+The current framework is legacy Next.js 12.1.6. The dependency audit on 20 November 2026 initially reported 18 advisories; compatible lockfile updates reduced this to 2 remaining findings (1 critical, 1 high, in Next.js and its PostCSS dependency). Passing functional tests is not production security clearance. Resolve the framework/dependency findings in a separately validated migration before public production release; do not run a forced audit upgrade blindly.
 
 No public deployment is verified. The repository has no configured homepage or GitHub Pages site. The `/api` endpoint requires a Next-compatible runtime; uploading static files to Pages alone will not run it. Reuse an existing free host if one is available, without paid upgrades or provisioning.
 

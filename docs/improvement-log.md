@@ -13,10 +13,12 @@ No existing PRs/issues or prior proposals found. Existing product remains a gene
 | Legacy framework has dependency advisories | Scope supported framework migration separately | Remove production security blockers | Medium | Framework compatibility | Backlog; do not force-upgrade | Required before production release |
 | No verified free hosting target | Inspect PR deployment integrations, reuse existing free host if available | Public reviewable demo | Small | Environment dependent | Backlog pending hosting evidence | Required |
 
-Implementation status: In Progress. No disruptive proposals, approval deadlines, or auto-approvals.
+Implementation status: Review / Testing. No disruptive proposals, approval deadlines, or auto-approvals.
 Validation and release evidence will be recorded below. Sample values are generated demo data, not weather observations.
 
 ## Validation and handoff
 
 Five scoped improvements implemented. Lint, four unit tests, production build, and eighteen desktop/mobile Chromium cases pass; 320px screenshot inspected. Tests also check 768/1280px layouts. No standalone TypeScript checker. No secrets or paid infrastructure used.
-Dependency audit: 18 findings (1 critical, 12 high, 5 moderate), retained as a release blocker. No production deployment claimed. Dedicated Project #17 tracks implementation and separate security/hosting backlog. No approvals requested or auto-approved.
+Dependency audit: compatible lockfile refresh reduced 18 findings to 2 (1 critical Next.js, 1 high PostCSS), retained as a release blocker. No production deployment claimed. Dedicated Project #17 tracks implementation and separate security/hosting backlog. No approvals requested or auto-approved.
+
+Additional implemented idea: compatible dependency refresh. Problem: stale transitive dependencies carry fixable advisories. Proposal: non-forced npm audit fix within existing version constraints. Reason/impact: reduce avoidable exposure, from 18 audit findings to 2. Complexity: small. Risk: transitive compatibility; full checks required. Recommendation: implement. Deployment: rebuild on eventual release. Framework major upgrade remains Backlog.
