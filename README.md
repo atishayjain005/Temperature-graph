@@ -1,34 +1,49 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Temperature Graph
 
-## Getting Started
+A Next.js / React / Chart.js temperature visualization demo. The API generates ten sample values for the previous ten complete UTC days. **These are random demo values, not measured or forecast weather.** No weather provider, API key, account, database, or paid service is needed.
 
-First, run the development server:
+## Run locally
 
-```bash
+Use Node.js 22 and npm:
+
+```sh
+npm ci
 npm run dev
-# or
-yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000. For the production server, run `npm run build` then `npm start`.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## Behavior
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+- `/api` returns `{ source: "generated-sample", unit: "°C", timeZone: "UTC", data: [{ date, temperature }] }`. Dates are UTC-midnight epoch milliseconds; generated integer values range from 15 through 44 °C. Each request generates new values; responses are not cached.
+- The chart and semantic table show the same chronological values. The table preserves full dates and supplies a non-canvas alternative.
+- Requests time out after ten seconds. Network/HTTP/JSON/schema errors and empty results have an explicit retry control. Unmounted requests are cancelled.
+- The chart has no animation, supports pointer tooltips, and fits 320px and larger layouts. Keyboard users can read the table and activate retry.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## Validation
 
-## Learn More
+```sh
+npx playwright install chromium
+npm run lint
+npm run test:unit
+npm run build
+npm run test:e2e
+```
 
-To learn more about Next.js, take a look at the following resources:
+Browser tests start the built production app on port 3018; keep that port free. Four Node tests exercise date boundaries and response validation. Eighteen Chromium cases cover the real API, failure/retry, invalid payloads, empty/timeout states, table semantics, keyboard recovery, reduced motion and responsive widths. CI uses Ubuntu 24.04 and installs Chromium dependencies. This JavaScript repository has no separate TypeScript check.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Release status and limitations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+The current framework is legacy Next.js 12.1.6. The dependency audit on 20 November 2026 initially reported 18 advisories; compatible lockfile updates reduced this to 2 remaining findings (1 critical, 1 high, in Next.js and its PostCSS dependency). Passing functional tests is not production security clearance. Resolve the framework/dependency findings in a separately validated migration before public production release; do not run a forced audit upgrade blindly.
 
-## Deploy on Vercel
+No public deployment is verified. The repository has no configured homepage or GitHub Pages site. The `/api` endpoint requires a Next-compatible runtime; uploading static files to Pages alone will not run it. Reuse an existing free host if one is available, without paid upgrades or provisioning.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Release checklist:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+1. Resolve dependency advisories and run all checks above.
+2. Review/merge the scoped branch and confirm the actual hosting build succeeds.
+3. Open the served URL and verify its sample disclosure, ten values, UTC dates and matching table.
+4. Check 320px layout and keyboard retry after blocking `/api`; restore networking and confirm recovery.
+5. Record the URL and deployed commit only after served behavior is verified.
+
+See [the improvement register](docs/improvement-log.md) for scope, risk and deployment backlog.

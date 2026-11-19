@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Head from "next/head";
+import { parseSample } from "../lib/temperature.cjs";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -25,86 +26,77 @@ ChartJS.register(
 );
 
 const options = {
-  plugins: {
-    legend: {
-      display: false,
-    },
-  },
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: false,
+  interaction: { mode: 'index', intersect: false },
+  plugins: { legend: { display: false }, tooltip: { callbacks: {
+    label: context => `${context.parsed.y} °C`,
+  } } },
   elements: {
-    line: {
-      tension: 0,
-      borderWidth: 3,
-      borderColor: "blue",
-      fill: "start",
-      backgroundColor: "white",
-    },
-    point: {
-      radius: 0,
-      hitRadius: 0,
-    },
+    line: { tension: 0, borderWidth: 3, borderColor: '#2454a6', fill: false },
+    point: { radius: 3, hitRadius: 12 },
   },
   scales: {
-    xAxis: {
-      display: true,
-    },
-    yAxis: {
-      display: true,
-    },
+    x: { title: { display: true, text: 'Date (UTC)' }, ticks: { maxTicksLimit: 5 } },
+    y: { title: { display: true, text: 'Temperature (°C)' } },
   },
 };
 
 export default function Home() {
   const [data, setData] = useState(null);
-  const [isLoading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [attempt, setAttempt] = useState(0);
   let labels = [];
   let content = [];
 
   useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+    let timedOut = false;
     setLoading(true);
-    fetch("/api/")
-      .then((res) => {
-        return res.json();
-      })
-      .then((data) => {
-        console.log("1", data, typeof data);
-        console.log("2", JSON.stringify(data));
-        setData(data);
-        setLoading(false);
-      });
-  }, []);
+    setError('');
+    const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 10000);
+    async function load() {
+      try {
+        const response = await fetch('/api/', { signal: controller.signal });
+        if (!response.ok) throw new Error('Temperature data could not be loaded.');
+        const result = parseSample(await response.json());
+        if (active) setData(result);
+      } catch (error) {
+        if (active) setError(timedOut ? 'The request timed out. Please try again.' : 'Temperature data could not be loaded. Please try again.');
+      } finally {
+        clearTimeout(timer);
+        if (active) setLoading(false);
+      }
+    }
+    load();
+    return () => { active = false; clearTimeout(timer); controller.abort(); };
+  }, [attempt]);
 
-  if (isLoading)
+  if (isLoading || error || !data || data.data.length === 0) {
     return (
-      <div
-        className="d-flex justify-content-center align-items-center position-fixed bottom-50 start-50"
-        style={{ transform: "translate(-50%,50%)" }}
-      >
-        <div
-          className="spinner-border"
-          style={{ width: "10rem", height: "10rem" }}
-          role="status"
-        >
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
+      <main className="container py-5">
+        <Head><title>Temperature Graph · Sample data</title></Head>
+        <h1>Temperature Graph</h1>
+        <p>Generated sample data, not observed weather. Temperatures in °C; dates in UTC.</p>
+        {isLoading ? <p role="status">Loading sample temperatures…</p> : <>
+          {error ? <p role="alert">{error}</p> : <p role="status">No temperature samples available.</p>}
+          <button type="button" className="btn btn-primary" onClick={() => setAttempt(value => value + 1)}>Try again</button>
+        </>}
+      </main>
     );
-  if (!data)
-    return (
-      <div
-        className="d-flex justify-content-center align-items-center position-fixed bottom-50 start-50"
-        style={{ transform: "translate(-50%,50%)" }}
-      >
-        <h3>No Data</h3>
-      </div>
-    );
+  }
 
-  data.data.map((dummyData) => {
+  data.data.forEach((dummyData) => {
     const date = new Date(dummyData.date);
 
     labels.push(
       date.toLocaleDateString([], {
         month: "2-digit",
         day: "2-digit",
+        timeZone: "UTC",
       })
     );
     content.push(dummyData.temperature);
@@ -118,38 +110,37 @@ export default function Home() {
       },
     ],
   };
-  console.log(data.data);
   return (
     <div>
-      <nav className="navbar navbar-dark bg-dark">
+      <Head><title>Temperature Graph · Sample data</title><meta name="description" content="A temperature chart demo using generated sample values, not observed weather." /></Head>
+      <header className="navbar navbar-dark bg-dark">
         <div className="container-fluid">
-          <Link
-            href="https://smiles.ai/in/v1/free-smile-assessment?utm_source=PPC&utm_medium=brand&utm_campaign=bangalore&utm_id=Search&gclid=CjwKCAjw-8qVBhANEiwAfjXLrhtBY1ieJUAT-Oo2FSooJnxFEAT9x9i50AInHt6kHJVXJ4H-ewvAvRoCwUoQAvD_BwE"
-            passHref
-          >
-            <a className="navbar-brand fw-bold">Smiles.ai Assignment</a>
-          </Link>
+          <span className="navbar-brand fw-bold">Temperature Graph</span>
         </div>
-      </nav>
-      {console.log(dummyData)}
-      <div className="container">
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-evenly",
-            alignItems: "center",
-            flexBasis: "100%",
-            height: "calc(100vh - 56px)",
-          }}
-        >
+      </header>
+      <main className="container">
+        <div className="chart-content">
           <h1 className="fw-bold">
-            <span className="text-danger  ">Weather Temperature</span> of last
-            10 days
+            Sample temperatures over 10 days
           </h1>
-          <Line data={dummyData} width={200} height={90} options={options} />
+          <p>Generated sample data, not observed weather. Temperatures in °C; dates in UTC.</p>
+          <div className="chart-frame">
+          <Line role="img" aria-label="Generated sample temperatures in degrees Celsius" aria-describedby="data-description" data={dummyData} options={options} />
+          </div>
+          <section aria-labelledby="data-heading" className="w-100 pb-4">
+            <h2 id="data-heading">Temperature samples</h2>
+            <p id="data-description">The table lists every value shown in the chart, from oldest to newest.</p>
+            <table className="table">
+              <caption>Generated daily temperatures; dates use UTC.</caption>
+              <thead><tr><th scope="col">Date (UTC)</th><th scope="col">Temperature (°C)</th></tr></thead>
+              <tbody>{data.data.map((row, index) => <tr key={`${row.date}-${index}`}>
+                <th scope="row"><time dateTime={new Date(row.date).toISOString()}>{new Date(row.date).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric',timeZone:'UTC'})}</time></th>
+                <td>{row.temperature} °C</td>
+              </tr>)}</tbody>
+            </table>
+          </section>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
